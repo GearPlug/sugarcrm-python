@@ -1,0 +1,163 @@
+import json
+import hashlib
+import requests
+from sugarcrm import exception
+from sugarcrm.decorator import valid_parameters
+from sugarcrm.enumerator import ErrorEnum
+
+
+class Client(object):
+    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True):
+        self.url = url + 'service/v4_1/rest.php?'
+        self.username = username
+        self.password = password
+        self.app = app
+        self.lang = lang
+        self.verify = verify
+
+        response = self._login()
+        self.session_id = response['id']
+
+    def _login(self):
+        params = [
+            {
+                'user_name': self.username,
+                'password': hashlib.md5(self.password.encode('utf8')).hexdigest()
+            },
+            self.app,
+            [{
+                'name': "language",
+                'value': self.lang
+            }]
+        ]
+        return self._post('login', params=params)
+
+    def _post(self, endpoint, params=None):
+        data = {
+            'method': endpoint,
+            'input_type': 'JSON',
+            'response_type': 'JSON',
+            'rest_data': json.dumps(params)
+        }
+        return self._parse(requests.post(self.url + endpoint, data=data, verify=True))
+
+    def _parse(self, response):
+        if response.status_code != requests.codes.ok:
+            raise exception.UnknownError()
+
+        data = response.json()
+        if 'name' in data and 'description' in data and 'number' in data:
+            code = data['number']
+            message = data['description']
+
+            try:
+                error_enum = ErrorEnum(code)
+            except Exception:
+                raise exception.UnexpectedError('Error: {}. Message {}'.format(code, message))
+            if error_enum == ErrorEnum.InvalidLogin:
+                raise exception.InvalidLogin(message)
+        return data
+
+    def get_available_modules(self, filter='default'):
+        """
+
+        Args:
+            filter: String to filter the modules with. Possible values are 'default', 'mobile', 'all'.
+
+        Returns:
+            A dict.
+
+        """
+        data = [self.session_id, filter]
+        return self._post('get_available_modules', data)['modules']
+
+    @valid_parameters
+    def get_entries(self, module_name, ids, *, select_fields=[], link_name_to_fields_array={}, track_view=False):
+        """
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            ids: The list of record IDs to retrieve.
+            select_fields: The list of fields to be returned in the results. Specifying an empty array will return all fields.
+            link_name_to_fields_array: A list of link names and the fields to be returned for each link.
+            track_view: Flag the record as a recently viewed item.
+
+        Returns:
+            A dict.
+
+        """
+        if isinstance(ids, str):
+            ids = [ids]
+        if link_name_to_fields_array:
+            link_name_to_fields_array = [{'name': k.lower(), 'value': v} for k, v in link_name_to_fields_array.items()]
+        data = [self.session_id, module_name, ids, select_fields, link_name_to_fields_array, track_view]
+        return self._post('get_entries', data)
+
+    @valid_parameters
+    def get_entry_list(self, module_name, query, order_by, *, offset=0, select_fields=[], link_name_to_fields_array={},
+                       max_results=0, deleted=False, favorites=False):
+        """
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            query: The SQL WHERE clause without the word "where". You should remember to specify the table name for the fields to avoid any ambiguous column errors.
+            order_by: The SQL ORDER BY clause without the phrase "order by".
+            offset: The record offset from which to start.
+            select_fields: The list of fields to be returned in the results. Specifying an empty array will return all fields.
+            link_name_to_fields_array: A list of link names and the fields to be returned for each link.
+            max_results: The maximum number of results to return.
+            deleted: If deleted records should be included in the results.
+            favorites: 	If only records marked as favorites should be returned.
+
+        Returns:
+            A dict.
+
+        """
+        if link_name_to_fields_array:
+            link_name_to_fields_array = [{'name': k.lower(), 'value': v} for k, v in link_name_to_fields_array.items()]
+        data = [self.session_id, module_name, query, order_by, offset, select_fields, link_name_to_fields_array,
+                max_results, int(deleted), favorites]
+        return self._post('get_entry_list', data)
+
+    @valid_parameters
+    def get_module_fields(self, module_name, *, fields=[]):
+        """
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            fields: The list of fields to retrieve. An empty parameter will return all.
+
+
+        Returns:
+
+        """
+        data = [self.session_id, module_name, fields]
+        return self._post('get_module_fields', data)
+
+    def set_entry(self, module_name, name_value_list):
+        """
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            name_value_list: The name/value list of the record attributes.
+
+        Returns:
+
+        """
+        _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_list.items()]
+        data = [self.session_id, module_name, _dict]
+        return self._post('set_entry', data)
+
+    def set_entries(self, module_name, name_value_lists):
+        """
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            name_value_lists: The an array of name/value lists containing the record attributes.
+
+        Returns:
+
+        """
+        _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_lists.items()]
+        data = [self.session_id, module_name, _dict]
+        return self._post('set_entries', data)
