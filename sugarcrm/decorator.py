@@ -9,6 +9,7 @@ params = {
     'deleted': bool,
     'favorites': bool,
     'fields': list,
+    'track_view': bool
 }
 
 

@@ -59,7 +59,7 @@ class Client(object):
         return data
 
     def get_available_modules(self, filter='default'):
-        """
+        """Retrieves a list of available modules in the system.
 
         Args:
             filter: String to filter the modules with. Possible values are 'default', 'mobile', 'all'.
@@ -69,11 +69,11 @@ class Client(object):
 
         """
         data = [self.session_id, filter]
-        return self._post('get_available_modules', data)['modules']
+        return self._post('get_available_modules', data)
 
     @valid_parameters
     def get_entries(self, module_name, ids, *, select_fields=[], link_name_to_fields_array={}, track_view=False):
-        """
+        """Retrieves a list of beans based on specified record IDs.
 
         Args:
             module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
@@ -94,9 +94,45 @@ class Client(object):
         return self._post('get_entries', data)
 
     @valid_parameters
-    def get_entry_list(self, module_name, query, order_by, *, offset=0, select_fields=[], link_name_to_fields_array={},
-                       max_results=0, deleted=False, favorites=False):
+    def get_entries_count(self, module_name, *, query="", deleted=False):
+        """Retrieves a list of beans based on query specifications.
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            query: The SQL WHERE clause without the word "where".
+            deleted: If deleted records should be included in the results.
+
+        Returns:
+            A dict.
+
         """
+        data = [self.session_id, module_name, query, int(deleted)]
+        return self._post('get_entries_count', data)
+
+    @valid_parameters
+    def get_entry(self, module_name, id, *, select_fields=[], link_name_to_fields_array={}, track_view=False):
+        """Retrieves a single bean based on record ID.
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            id: The ID of the record to retrieve.
+            select_fields: The list of fields to be returned in the results. Specifying an empty array will return all fields.
+            link_name_to_fields_array: A list of link names and the fields to be returned for each link.
+            track_view: Flag the record as a recently viewed item.
+
+        Returns:
+            A dict.
+
+        """
+        if link_name_to_fields_array:
+            link_name_to_fields_array = [{'name': k.lower(), 'value': v} for k, v in link_name_to_fields_array.items()]
+        data = [self.session_id, module_name, id, select_fields, link_name_to_fields_array, track_view]
+        return self._post('get_entries_count', data)
+
+    @valid_parameters
+    def get_entry_list(self, module_name, *, query="", order_by="", offset=0, select_fields=[], link_name_to_fields_array={},
+                       max_results=0, deleted=False, favorites=False):
+        """Retrieves a list of beans based on query specifications.
 
         Args:
             module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
@@ -121,43 +157,45 @@ class Client(object):
 
     @valid_parameters
     def get_module_fields(self, module_name, *, fields=[]):
-        """
+        """Retrieves the list of field vardefs for a specific module.
 
         Args:
             module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
             fields: The list of fields to retrieve. An empty parameter will return all.
 
-
         Returns:
+            A dict.
 
         """
         data = [self.session_id, module_name, fields]
         return self._post('get_module_fields', data)
 
-    def set_entry(self, module_name, name_value_list):
-        """
-
-        Args:
-            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
-            name_value_list: The name/value list of the record attributes.
-
-        Returns:
-
-        """
-        _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_list.items()]
-        data = [self.session_id, module_name, _dict]
-        return self._post('set_entry', data)
-
     def set_entries(self, module_name, name_value_lists):
-        """
+        """Create or update a list of records.
 
         Args:
             module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
             name_value_lists: The an array of name/value lists containing the record attributes.
 
         Returns:
+            A dict.
 
         """
         _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_lists.items()]
         data = [self.session_id, module_name, _dict]
         return self._post('set_entries', data)
+
+    def set_entry(self, module_name, name_value_list):
+        """Creates or updates a specific record.
+
+        Args:
+            module_name: The name of the module from which to retrieve records. Note: This is the modules key which may not be the same as the modules display name.
+            name_value_list: The name/value list of the record attributes.
+
+        Returns:
+            A dict.
+
+        """
+        _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_list.items()]
+        data = [self.session_id, module_name, _dict]
+        return self._post('set_entry', data)
