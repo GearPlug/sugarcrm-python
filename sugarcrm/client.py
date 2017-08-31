@@ -130,8 +130,8 @@ class Client(object):
         return self._post('get_entries_count', data)
 
     @valid_parameters
-    def get_entry_list(self, module_name, *, query="", order_by="", offset=0, select_fields=[], link_name_to_fields_array={},
-                       max_results=0, deleted=False, favorites=False):
+    def get_entry_list(self, module_name, *, query="", order_by="", offset=0, select_fields=[],
+                       link_name_to_fields_array={}, max_results=0, deleted=False, favorites=False):
         """Retrieves a list of beans based on query specifications.
 
         Args:
@@ -199,3 +199,93 @@ class Client(object):
         _dict = [{'name': k.lower(), 'value': v} for k, v in name_value_list.items()]
         data = [self.session_id, module_name, _dict]
         return self._post('set_entry', data)
+
+    def get_document_revision(self):
+        raise NotImplementedError
+
+    def get_language_definition(self):
+        raise NotImplementedError
+
+    def get_last_viewed(self):
+        raise NotImplementedError
+
+    def get_modified_relationships(self):
+        raise NotImplementedError
+
+    def get_module_fields_md5(self):
+        raise NotImplementedError
+
+    def get_module_layout(self):
+        raise NotImplementedError
+
+    def get_module_layout_md5(self):
+        raise NotImplementedError
+
+    def get_note_attachment(self):
+        raise NotImplementedError
+
+    def get_quotes_pdf(self):
+        raise NotImplementedError
+
+    def get_relationships(self):
+        raise NotImplementedError
+
+    def get_report_entries(self):
+        raise NotImplementedError
+
+    def get_report_pdf(self):
+        raise NotImplementedError
+
+    def get_server_info(self):
+        raise NotImplementedError
+
+    def get_upcoming_activities(self):
+        raise NotImplementedError
+
+    def get_user_id(self):
+        raise NotImplementedError
+
+    def get_user_team_id(self):
+        raise NotImplementedError
+
+    def job_queue_cycle(self):
+        raise NotImplementedError
+
+    def job_queue_next(self):
+        raise NotImplementedError
+
+    def job_queue_run(self):
+        raise NotImplementedError
+
+    def logout(self):
+        raise NotImplementedError
+
+    def oauth_access(self):
+        raise NotImplementedError
+
+    def seamless_login(self):
+        raise NotImplementedError
+
+    def search_by_module(self):
+        raise NotImplementedError
+
+    def set_campaign_merge(self):
+        raise NotImplementedError
+
+    def set_document_revision(self):
+        raise NotImplementedError
+
+    def set_note_attachment(self):
+        raise NotImplementedError
+
+    def set_relationship(self):
+        raise NotImplementedError
+
+    def set_relationships(self):
+        raise NotImplementedError
+
+    def snip_import_emails(self):
+        raise NotImplementedError
+
+    def snip_update_contacts(self):
+        raise NotImplementedError
