@@ -42,6 +42,8 @@ class Client(object):
         return self._parse(requests.post(self.url + endpoint, data=data, verify=True))
 
     def _parse(self, response):
+        if response.status_code == requests.codes.not_found:
+            raise exception.InvalidURL(response.url)
         if response.status_code != requests.codes.ok:
             raise exception.UnknownError()
 
