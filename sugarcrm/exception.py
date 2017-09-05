@@ -16,3 +16,7 @@ class InvalidLogin(BaseError):
 
 class WrongParameter(BaseError):
     pass
+
+
+class InvalidURL(BaseError):
+    pass

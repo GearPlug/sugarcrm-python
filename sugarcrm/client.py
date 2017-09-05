@@ -8,7 +8,9 @@ from sugarcrm.enumerator import ErrorEnum
 
 class Client(object):
     def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, session=None):
-        self.url = url + 'service/v4_1/rest.php?'
+        if not url.endswith('/service/v4_1/rest.php'):
+            url += 'service/v4_1/rest.php'
+        self.url = url + '?'
         self.username = username
         self.password = password
         self.app = app
@@ -47,7 +49,9 @@ class Client(object):
         return self._parse(client.post(self.url + endpoint, data=data, verify=True))
 
     def _parse(self, response):
-        if not response.ok:
+        if response.status_code == requests.codes.not_found:
+            raise exception.InvalidURL(response.url)
+        if response.status_code != requests.codes.ok:
             raise exception.UnknownError()
 
         data = response.json()
