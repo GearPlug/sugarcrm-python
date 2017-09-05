@@ -7,13 +7,14 @@ from sugarcrm.enumerator import ErrorEnum
 
 
 class Client(object):
-    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True):
+    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, session=None):
         self.url = url + 'service/v4_1/rest.php?'
         self.username = username
         self.password = password
         self.app = app
         self.lang = lang
         self.verify = verify
+        self.session = session
 
         response = self._login()
         self.session_id = response['id']
@@ -39,10 +40,14 @@ class Client(object):
             'response_type': 'JSON',
             'rest_data': json.dumps(params)
         }
-        return self._parse(requests.post(self.url + endpoint, data=data, verify=True))
+        if self.session:
+            client = self.session
+        else:
+            client = requests
+        return self._parse(client.post(self.url + endpoint, data=data, verify=True))
 
     def _parse(self, response):
-        if response.status_code != requests.codes.ok:
+        if not response.ok:
             raise exception.UnknownError()
 
         data = response.json()
