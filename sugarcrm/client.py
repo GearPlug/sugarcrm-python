@@ -9,6 +9,8 @@ from sugarcrm.enumerator import ErrorEnum
 class Client(object):
     def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, session=None):
         if not url.endswith('/service/v4_1/rest.php'):
+            if not url.endswith('/'):
+                url += '/'
             url += 'service/v4_1/rest.php'
         self.url = url + '?'
         self.username = username
@@ -17,8 +19,10 @@ class Client(object):
         self.lang = lang
         self.verify = verify
         self.session = session
-
-        response = self._login()
+        try:
+            response = self._login()
+        except requests.exceptions.InvalidSchema:
+            raise exception.InvalidURL("Please check your url '{0}' has a valid schema: 'http://', 'https://'".format(response.url))
         self.session_id = response['id']
 
     def _login(self):
