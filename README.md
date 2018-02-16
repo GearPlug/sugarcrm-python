@@ -3,7 +3,7 @@ Sugar CRM API wrapper written in python.
 
 ## Installing
 ```
-pip install git+git://github.com/GearPlug/sugarcrm-python.git
+pip install sugarcrm-python
 ```
 
 ## Usage
