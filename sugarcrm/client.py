@@ -53,23 +53,22 @@ class Client(object):
         return self._parse(client.post(self.url + endpoint, data=data, verify=True))
 
     def _parse(self, response):
-        if response.status_code == requests.codes.not_found:
-            raise exception.InvalidURL(response.url)
-        if response.status_code != requests.codes.ok:
-            raise exception.UnknownError()
+        if 'application/json' in response.headers['Content-Type']:
+            r = response.json()
+        else:
+            r = response.text
 
-        data = response.json()
-        if 'name' in data and 'description' in data and 'number' in data:
-            code = data['number']
-            message = data['description']
+        if 'name' in r and 'description' in r and 'number' in r:
+            code = r['number']
+            message = r['description']
 
             try:
                 error_enum = ErrorEnum(code)
             except Exception:
-                raise exception.UnexpectedError('Error: {}. Message {}'.format(code, message))
+                raise exception.UnknownError('Error: {}. Message {}'.format(code, message))
             if error_enum == ErrorEnum.InvalidLogin:
                 raise exception.InvalidLogin(message)
-        return data
+        return r
 
     def get_available_modules(self, filter='default'):
         """Retrieves a list of available modules in the system.

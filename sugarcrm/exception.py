@@ -2,10 +2,6 @@ class BaseError(Exception):
     pass
 
 
-class UnexpectedError(BaseError):
-    pass
-
-
 class UnknownError(BaseError):
     pass
 
