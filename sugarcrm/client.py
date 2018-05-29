@@ -56,7 +56,10 @@ class Client(object):
         if 'application/json' in response.headers['Content-Type']:
             r = response.json()
         else:
-            r = response.text
+            try:
+                r = response.json()
+            except Exception:
+                r = response.text
 
         if 'name' in r and 'description' in r and 'number' in r:
             code = r['number']
