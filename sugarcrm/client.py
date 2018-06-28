@@ -57,7 +57,7 @@ class Client(object):
             r = response.json()
         else:
             try:
-                r = response.json()
+                r = response.json() # Una version anterior de SugarCRM no utiliza los headers adecuadamente.
             except Exception:
                 r = response.text
 
