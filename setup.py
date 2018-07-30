@@ -1,4 +1,5 @@
 import os
+
 from setuptools import setup
 
 
@@ -7,9 +8,10 @@ def read(fname):
 
 
 setup(name='sugarcrm-python',
-      version='0.1.2',
+      version='0.1.3',
       description='API wrapper for SugarCRM written in Python',
       long_description=read('README.md'),
+      long_description_content_type="text/markdown",
       url='https://github.com/GearPlug/sugarcrm-python',
       author='Miguel Ferrer',
       author_email='ingferrermiguel@gmail.com',

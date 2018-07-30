@@ -142,7 +142,7 @@ class Client(object):
         if link_name_to_fields_array:
             link_name_to_fields_array = [{'name': k.lower(), 'value': v} for k, v in link_name_to_fields_array.items()]
         data = [self.session_id, module_name, id, select_fields, link_name_to_fields_array, track_view]
-        return self._post('get_entries_count', data)
+        return self._post('get_entry', data)
 
     @valid_parameters
     def get_entry_list(self, module_name, *, query="", order_by="", offset=0, select_fields=[],
