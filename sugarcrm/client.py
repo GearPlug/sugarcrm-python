@@ -294,8 +294,8 @@ class Client(object):
         favorites=False,
     ):
         """Given a list of modules to search and a search string, return the
-        id, module_name, along with the fields We will support Accounts, Bugs,
-        Cases, Contacts, Leads, Opportunities, Project, ProjectTask, Quotes
+        id, module_name, along with the fields. Supports Accounts, Bugs, Cases,
+        Contacts, Leads, Opportunities, Project, ProjectTask, Quotes.
      
         Args:
             search_string: string to search
