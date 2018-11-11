@@ -45,7 +45,7 @@ client.get_module_fields('MODULE_NAME')
 
 Search by module
 ```
-client.search_by_module('SEARCH_STRING', ['MODULES_NAMES'])
+client.search_by_module('SEARCH_STRING', ['MODULE_NAMES'])
 ```
 
 ## Requirements
