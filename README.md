@@ -43,6 +43,11 @@ Get module fields
 client.get_module_fields('MODULE_NAME')
 ```
 
+Search by module
+```
+client.search_by_module('SEARCH_STRING', ['MODULES_NAMES'])
+```
+
 ## Requirements
 - requests
 
@@ -74,7 +79,6 @@ python tests/test_client.py
 - logout
 - oauth_access
 - seamless_login
-- search_by_module
 - set_campaign_merge
 - set_document_revision
 - set_note_attachment
