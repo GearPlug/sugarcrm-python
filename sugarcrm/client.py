@@ -281,8 +281,51 @@ class Client(object):
     def seamless_login(self):
         raise NotImplementedError
 
-    def search_by_module(self):
-        raise NotImplementedError
+    @valid_parameters
+    def search_by_module(
+        self,
+        search_string,
+        modules,
+        offset=0,
+        max_results=0,
+        assigned_user_id="",
+        select_fields=[],
+        unified_search_only=False,
+        favorites=False,
+    ):
+        """Given a list of modules to search and a search string, return the
+        id, module_name, along with the fields. Supports Accounts, Bugs, Cases,
+        Contacts, Leads, Opportunities, Project, ProjectTask, Quotes.
+     
+        Args:
+            search_string: string to search
+            modules: array of modules to query
+            offset: a specified offset in the query
+            max_results: max number of records to return
+            assigned_user_id: a user id to filter all records by, leave empty
+                to exclude the filter
+            select_fields: An array of fields to return. If empty the default
+                return fields will be from the active list view defs.
+            unified_search_only: A boolean indicating if we should only search
+                against those modules participating in the unified search.
+            favorites: A boolean indicating if we should only search against
+                records marked as favorites.
+
+        Returns:
+            A dict.
+        """
+        data = [
+            self.session_id,
+            search_string,
+            modules,
+            offset,
+            max_results,
+            assigned_user_id,
+            select_fields,
+            unified_search_only,
+            favorites,
+        ]
+        return self._post("search_by_module", data)
 
     def set_campaign_merge(self):
         raise NotImplementedError
