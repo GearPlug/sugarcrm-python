@@ -242,8 +242,64 @@ class Client(object):
     def get_quotes_pdf(self):
         raise NotImplementedError
 
-    def get_relationships(self):
-        raise NotImplementedError
+    def get_relationships(
+        self,
+        module_name,
+        module_id,
+        link_field_name,
+        related_module_query,
+        related_fields,
+        related_module_link_name_to_fields_array,
+        deleted=False,
+        order_by="",
+        offset=0,
+        limit=False,
+    ):
+        """Retrieve a collection of beans that are related to the specified
+        bean and optionally return relationship data for those related beans.
+
+        Args:
+            module_name: The name of the module that the primary record is
+                from. This name should be the name the module was developed
+                under (changing a tab name is studio does not affect the name
+                that should be passed into this method)..
+            module_id: The ID of the bean in the specified module
+            link_field_name: The name of the link field to return records from.
+                This name should be the name the relationship.
+            related_module_query: A portion of the where clause of the SQL
+                statement to find the related items.  The SQL query will
+                already be filtered to only include the beans that are related
+                to the specified bean.
+            related_fields - Array of related bean fields to be returned.
+            related_module_link_name_to_fields_array - For every related bean
+                returrned, specify link fields name to fields info for that
+                bean to be returned. For ex.'link_name_to_fields_array' =>
+                array(array('name' =>  'email_addresses', 'value' =>
+                array('id', 'email_address', 'opt_out', 'primary_address'))).
+            deleted: false if deleted records should not be include, true if
+                deleted records should be included.
+            order_by: field to order the result sets by
+            offset: where to start in the return
+            limit: number of results to return (defaults to all)
+
+        Returns:
+            A dict.
+        """
+
+        data = [
+            self.session_id,
+            module_name,
+            module_id,
+            link_field_name,
+            related_module_query,
+            related_fields,
+            related_module_link_name_to_fields_array,
+            int(deleted),
+            order_by,
+            offset,
+            limit,
+        ]
+        return self._post("get_relationships", data)
 
     def get_report_entries(self):
         raise NotImplementedError
