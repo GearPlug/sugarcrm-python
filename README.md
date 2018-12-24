@@ -48,6 +48,11 @@ Search by module
 client.search_by_module('SEARCH_STRING', ['MODULE_NAMES'])
 ```
 
+Set relationship
+```
+client.set_relationship('SOURCE_MODULE_NAME', 'SOURCE_ENTRY_ID', 'TARGET_MODULE', ['TARGET_IDS'])
+```
+
 ## Requirements
 - requests
 
@@ -82,7 +87,6 @@ python tests/test_client.py
 - set_campaign_merge
 - set_document_revision
 - set_note_attachment
-- set_relationship
 - set_relationships
 - snip_import_emails
 - snip_update_contacts
