@@ -333,8 +333,41 @@ class Client(object):
     def set_document_revision(self):
         raise NotImplementedError
 
-    def set_note_attachment(self):
-        raise NotImplementedError
+    def set_note_attachment(
+        self,
+        noteid,
+        filename,
+        filecontent,
+        related_module_id=None,
+        related_module_name=None,
+    ):
+        """Add or replace the attachment on a Note. Optionally you can set the
+        relationship of this note to Accounts/Contacts and so on by setting
+        related_module_id, related_module_name
+
+        Args:
+            noteid: The ID of the Note containing the attachment
+            filename: The file name of the attachment
+            filecontent: The binary contents of the file.
+            related_module_id: module id to which this note to related to
+            related_module_name: module name to which this note to related to
+
+        Returns:
+            A dict.
+        """
+        data = [
+            self.session_id,
+            {
+                "id": noteid,
+                "filename": filename,
+                "file": filecontent,
+                "related_module_id": related_module_id,
+                "related_module_name": related_module_name,
+            },
+        ]
+
+        return self._post("set_note_attachment", data)
+
 
     @valid_parameters
     def set_relationship(
