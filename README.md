@@ -53,6 +53,11 @@ Set relationship
 client.set_relationship('SOURCE_MODULE_NAME', 'SOURCE_ENTRY_ID', 'TARGET_MODULE', ['TARGET_IDS'])
 ```
 
+Get relationships
+```
+client.get_relationships('MODULE_NAME', 'ENTRY_ID', 'RELATIONSHIP_NAME', 'WHERE_CLAUSE', 'RELATED_MODULE_FIELDS', 'RELATED_MODULE_LINK_FIELDS')
+```
+
 ## Requirements
 - requests
 
@@ -71,7 +76,6 @@ python tests/test_client.py
 - get_module_layout_md5
 - get_note_attachment
 - get_quotes_pdf
-- get_relationships
 - get_report_entries
 - get_report_pdf
 - get_server_info
