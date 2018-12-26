@@ -392,8 +392,49 @@ class Client(object):
     def set_note_attachment(self):
         raise NotImplementedError
 
-    def set_relationship(self):
-        raise NotImplementedError
+    @valid_parameters
+    def set_relationship(
+        self,
+        module_name,
+        module_id,
+        link_field_name,
+        related_ids,
+        name_value_list=[],
+        delete=0,
+    ):
+        """Set a single relationship between two beans. The items are related
+        by module name and id.
+
+        Args:
+            module_name: name of the module that the primary record is from.
+                This name should be the name the module was developed under
+                (changing a tab name is studio does not affect the name that
+                should be passed into this method)..
+            module_id: The ID of the bean in the specified module_name
+            link_field_name: name of the link field which relates to the other
+                module for which the relationship needs to be generated.
+            related_ids: array of related record ids for which relationships
+                needs to be generated
+            name_value_list: The keys of the array are the SugarBean
+                attributes, the values of the array are the values the
+                attributes should have.
+            delete: Optional, if the value 0 or nothing is passed then it will
+                add the relationship for related_ids and if 1 is passed, it
+                will delete this relationship for related_ids
+
+        Returns:
+            A dict.
+        """
+        data = [
+            self.session_id,
+            module_name,
+            module_id,
+            link_field_name,
+            related_ids,
+            name_value_list,
+            delete,
+        ]
+        return self._post("set_relationship", data)
 
     def set_relationships(self):
         raise NotImplementedError
