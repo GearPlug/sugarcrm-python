@@ -7,7 +7,7 @@ from sugarcrm.enumerator import ErrorEnum
 
 
 class Client(object):
-    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, session=None):
+    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, requests_session=None, requests_hooks=None):
         if not url.endswith('/service/v4_1/rest.php'):
             if not url.endswith('/'):
                 url += '/'
@@ -18,7 +18,10 @@ class Client(object):
         self.app = app
         self.lang = lang
         self.verify = verify
-        self.session = session
+        self.requests_session = requests_session
+        if requests_hooks and not isinstance(requests_hooks, dict):
+            raise Exception('requests_hooks must be a dict. e.g. {"response": func}. http://docs.python-requests.org/en/master/user/advanced/#event-hooks')
+        self.requests_hooks = requests_hooks
         try:
             response = self._login()
         except requests.exceptions.InvalidSchema:
@@ -39,27 +42,29 @@ class Client(object):
         ]
         return self._post('login', params=params)
 
-    def _post(self, endpoint, params=None):
+    def _post(self, endpoint, params=None, **kwargs):
         data = {
             'method': endpoint,
             'input_type': 'JSON',
             'response_type': 'JSON',
             'rest_data': json.dumps(params)
         }
-        if self.session:
-            client = self.session
+        if self.requests_session:
+            client = self.requests_session
         else:
             client = requests
-        return self._parse(client.post(self.url + endpoint, data=data, verify=True))
+        if self.requests_hooks:
+            kwargs.update({'hooks': self.requests_hooks})
+        return self._parse(client.post(self.url + endpoint, data=data, verify=True, **kwargs))
 
     def _parse(self, response):
         if 'application/json' in response.headers['Content-Type']:
             r = response.json()
         else:
             try:
-                r = response.json() # Una version anterior de SugarCRM no utiliza los headers adecuadamente.
+                r = response.json()  # Una version anterior de SugarCRM no utiliza los headers adecuadamente.
             except Exception:
-                r = response.text
+                return response.text
 
         if 'name' in r and 'description' in r and 'number' in r:
             code = r['number']
