@@ -1,18 +1,39 @@
-import json
 import hashlib
+import json
+
 import requests
+
 from sugarcrm import exception
 from sugarcrm.decorator import valid_parameters
 from sugarcrm.enumerator import ErrorEnum
 
 
 class Client(object):
-    def __init__(self, url, username, password, app='sugarcrm-python', lang='en_US', verify=True, requests_session=None, requests_hooks=None):
-        if not url.endswith('/service/v4_1/rest.php'):
-            if not url.endswith('/'):
-                url += '/'
-            url += 'service/v4_1/rest.php'
-        self.url = url + '?'
+    VERSIONS = {
+        '6.5': 'service/v4_1/rest.php',
+        '7.7': 'rest/v10/',
+        '7.8': 'rest/v10/',
+        '7.9': 'rest/v10/',
+        '7.10': 'rest/v11/',
+        '7.11': 'rest/v11/',
+        '8.0': 'rest/v11_1/',
+        '8.1': 'rest/v11_2/',
+        '8.2': 'rest/v11_3/',
+        '8.3': 'rest/v11_4/'
+    }
+
+    def __init__(self, url, username, password, version, app='sugarcrm-python', lang='en_US', verify=True,
+                 requests_session=None, requests_hooks=None):
+
+        if not url.endswith('/'):
+            url += '/'
+        if any((v in version for v in self.VERSIONS.keys())):
+            url += self.VERSIONS[version]
+        else:
+            raise exception.UnsupportedVersion('The version {} is not supported by this library.'.format(version))
+
+        self.version = version
+        self.url = url
         self.username = username
         self.password = password
         self.app = app
@@ -20,16 +41,21 @@ class Client(object):
         self.verify = verify
         self.requests_session = requests_session
         if requests_hooks and not isinstance(requests_hooks, dict):
-            raise Exception('requests_hooks must be a dict. e.g. {"response": func}. http://docs.python-requests.org/en/master/user/advanced/#event-hooks')
+            raise Exception(
+                'requests_hooks must be a dict. e.g. {"response": func}. http://docs.python-requests.org/en/master/user/advanced/#event-hooks')
         self.requests_hooks = requests_hooks
-        try:
-            response = self._login()
-        except requests.exceptions.InvalidSchema:
-            raise exception.InvalidURL("Please check your url '{0}' has a valid schema: 'http://', 'https://'".format(response.url))
-        self.session_id = response['id']
+
+        if version == '6.5':
+            self.url += '?'
+            try:
+                response = self._login()
+            except requests.exceptions.InvalidSchema:
+                raise exception.InvalidURL(
+                    "Please check your url '{0}' has a valid schema: 'http://', 'https://'".format(response.url))
+            self.session_id = response['id']
 
     def _login(self):
-        params = [
+        rest_data = [
             {
                 'user_name': self.username,
                 'password': hashlib.md5(self.password.encode('utf8')).hexdigest()
@@ -40,22 +66,48 @@ class Client(object):
                 'value': self.lang
             }]
         ]
-        return self._post('login', params=params)
+        return self._post('login', rest_data=rest_data)
 
-    def _post(self, endpoint, params=None, **kwargs):
+    def authenticate(self, username, password, client_id='sugar', client_secret=''):
         data = {
-            'method': endpoint,
-            'input_type': 'JSON',
-            'response_type': 'JSON',
-            'rest_data': json.dumps(params)
+            'grant_type': 'password',
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'username': username,
+            'password': password
         }
+        return self._post('oauth2/token', json=data)
+
+    def _post(self, endpoint, **kwargs):
+        return self._request('POST', endpoint, **kwargs)
+
+    def _request(self, method, endpoint, headers=None, **kwargs):
+        if self.version == '6.5':
+            data = {
+                'method': endpoint,
+                'input_type': 'JSON',
+                'response_type': 'JSON',
+                'rest_data': json.dumps(kwargs.pop('rest_data', None))
+            }
+            kwargs['data'] = data
+        else:
+            _headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            if headers:
+                _headers.update(headers)
+            kwargs['headers'] = _headers
+
+        if self.requests_hooks:
+            kwargs.update({'hooks': self.requests_hooks})
+
         if self.requests_session:
             client = self.requests_session
         else:
             client = requests
-        if self.requests_hooks:
-            kwargs.update({'hooks': self.requests_hooks})
-        return self._parse(client.post(self.url + endpoint, data=data, verify=True, **kwargs))
+
+        return self._parse(client.request(method, self.url + endpoint, verify=self.verify, **kwargs))
 
     def _parse(self, response):
         if 'application/json' in response.headers['Content-Type']:
@@ -248,17 +300,17 @@ class Client(object):
         raise NotImplementedError
 
     def get_relationships(
-        self,
-        module_name,
-        module_id,
-        link_field_name,
-        related_module_query,
-        related_fields,
-        related_module_link_name_to_fields_array,
-        deleted=False,
-        order_by="",
-        offset=0,
-        limit=False,
+            self,
+            module_name,
+            module_id,
+            link_field_name,
+            related_module_query,
+            related_fields,
+            related_module_link_name_to_fields_array,
+            deleted=False,
+            order_by="",
+            offset=0,
+            limit=False,
     ):
         """Retrieve a collection of beans that are related to the specified
         bean and optionally return relationship data for those related beans.
@@ -344,15 +396,15 @@ class Client(object):
 
     @valid_parameters
     def search_by_module(
-        self,
-        search_string,
-        modules,
-        offset=0,
-        max_results=0,
-        assigned_user_id="",
-        select_fields=[],
-        unified_search_only=False,
-        favorites=False,
+            self,
+            search_string,
+            modules,
+            offset=0,
+            max_results=0,
+            assigned_user_id="",
+            select_fields=[],
+            unified_search_only=False,
+            favorites=False,
     ):
         """Given a list of modules to search and a search string, return the
         id, module_name, along with the fields. Supports Accounts, Bugs, Cases,
@@ -395,12 +447,12 @@ class Client(object):
         raise NotImplementedError
 
     def set_note_attachment(
-        self,
-        noteid,
-        filename,
-        filecontent,
-        related_module_id=None,
-        related_module_name=None,
+            self,
+            noteid,
+            filename,
+            filecontent,
+            related_module_id=None,
+            related_module_name=None,
     ):
         """Add or replace the attachment on a Note. Optionally you can set the
         relationship of this note to Accounts/Contacts and so on by setting
@@ -429,16 +481,15 @@ class Client(object):
 
         return self._post("set_note_attachment", data)
 
-
     @valid_parameters
     def set_relationship(
-        self,
-        module_name,
-        module_id,
-        link_field_name,
-        related_ids,
-        name_value_list=[],
-        delete=0,
+            self,
+            module_name,
+            module_id,
+            link_field_name,
+            related_ids,
+            name_value_list=[],
+            delete=0,
     ):
         """Set a single relationship between two beans. The items are related
         by module name and id.
