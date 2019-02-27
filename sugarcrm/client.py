@@ -61,11 +61,73 @@ class Client(object):
     def set_access_token(self, access_token):
         self.access_token = access_token
 
+    def me(self, **kwargs):
+        return self._get('me', **kwargs)
+
     def get_leads(self, **kwargs):
         return self._get('Leads', **kwargs)
 
-    def create_lead(self, **kwargs):
+    def get_lead(self, lead_id, **kwargs):
+        return self._get('Leads/{}/'.format(lead_id), **kwargs)
+
+    def filter_leads(self, filter_expr=None, filter_id=None, max_num=None, offset=None, fields=None, view=None,
+                     order_by=None, **kwargs):
+        if filter_expr and not isinstance(filter_expr, list):
+            url = 'https://support.sugarcrm.com/Documentation/Sugar_Developer/Sugar_Developer_Guide_8.3/Integration/Web_Services/REST_API/Endpoints/modulefilter_POST/#Basic'
+            raise Exception('filter_expr must be a list of dicts. {}'.format(url))
+        kwargs['json'] = {
+            'filter': filter_expr,
+            'filter_id': filter_id,
+            'max_num': max_num,
+            'offset': offset,
+            'fields': fields,
+            'view': view,
+            'order_by': order_by
+
+        }
+        return self._post('Leads/filter', **kwargs)
+
+    def create_lead(self, data, **kwargs):
+        kwargs['json'] = data
         return self._post('Leads', **kwargs)
+
+    def get_contacts(self, **kwargs):
+        return self._get('Contacts', **kwargs)
+
+    def get_contact(self, contact_id, **kwargs):
+        return self._get('Contacts/{}/'.format(contact_id), **kwargs)
+
+    def filter_contacts(self, filter_expr=None, filter_id=None, max_num=None, offset=None, fields=None, view=None,
+                        order_by=None, **kwargs):
+        if filter_expr and not isinstance(filter_expr, list):
+            url = 'https://support.sugarcrm.com/Documentation/Sugar_Developer/Sugar_Developer_Guide_8.3/Integration/Web_Services/REST_API/Endpoints/modulefilter_POST/#Basic'
+            raise Exception('filter_expr must be a list of dicts. {}'.format(url))
+        kwargs['json'] = {
+            'filter': filter_expr,
+            'filter_id': filter_id,
+            'max_num': max_num,
+            'offset': offset,
+            'fields': fields,
+            'view': view,
+            'order_by': order_by
+
+        }
+        return self._post('Contacts/filter', **kwargs)
+
+    def create_contact(self, data, **kwargs):
+        kwargs['json'] = data
+        return self._post('Contacts', **kwargs)
+
+    def get_metadata(self, module, **kwargs):
+        params = {
+            'module_filter': module,
+            'type_filter': 'modules'
+        }
+        if 'params' in kwargs:
+            kwargs['params'].update(params)
+        else:
+            kwargs['params'] = params
+        return self._get('metadata', **kwargs)
 
     def _get(self, endpoint, **kwargs):
         return self._request('GET', endpoint, **kwargs)
