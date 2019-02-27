@@ -16,7 +16,3 @@ class WrongParameter(BaseError):
 
 class InvalidURL(BaseError):
     pass
-
-
-class UnsupportedVersion(BaseError):
-    pass
