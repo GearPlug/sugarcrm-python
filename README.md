@@ -30,7 +30,7 @@ client.get_entries_count('MODULE_NAME')
 
 Get entry
 ```
-client.get_entries_count('MODULE_NAME', 'ENTRY_ID')
+client.get_entries('MODULE_NAME', 'ENTRY_ID')
 ```
 
 Get entry list
