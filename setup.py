@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='sugarcrm-python',
-      version='0.1.7',
+      version='0.1.8',
       description='API wrapper for SugarCRM written in Python',
       long_description=read('README.md'),
       long_description_content_type="text/markdown",

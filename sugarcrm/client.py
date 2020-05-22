@@ -55,7 +55,7 @@ class Client(object):
             client = requests
         if self.requests_hooks:
             kwargs.update({'hooks': self.requests_hooks})
-        return self._parse(client.post(self.url + endpoint, data=data, verify=True, **kwargs))
+        return self._parse(client.post(self.url + endpoint, data=data, verify=self.verify, **kwargs))
 
     def _parse(self, response):
         if 'application/json' in response.headers['Content-Type']:
